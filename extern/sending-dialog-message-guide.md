@@ -44,7 +44,7 @@ The following header is required on every record:
 
 | Header | Value |
 |---|---|
-| `sourceSystem` | Name of your application (e.g. your Nais application name) |
+| `sourceSystem` | Name of your application (e.g. your Nais application name) or team |
 
 Example (Kotlin, using the Kafka Producer API):
 
