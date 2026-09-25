@@ -1,19 +1,18 @@
-**Endringer i iSYFO sine tjenester i forbindelse med migrering til\
-EDI 2.0.**
+**Endringer i iSYFO sine tjenester i forbindelse med migrering til EDI 2.0.**
 
 **Forutsetninger:**
 
-1.  Så at iSYFO sitt fragsystem kan sende og ta imot dialogmeldinger via
-    Helsemeldings plattform, skal fragsystemet støtte det grensesnittet
+1.  Så at iSYFO sitt fagsystem kan sende og ta imot dialogmeldinger via
+    Helsemeldings plattform, skal fagsystemet støtte det grensesnittet
     som plattformen tilbyr.
 
-2.  Det blir en overgangsperiode da iSYFO sitt fragsystem skal sende og
+2.  Det blir en overgangsperiode da iSYFO sitt fagsystem skal sende og
     ta imot dialogmeldinger både via Helsemeldings plattform og via
     eMottak. Siden de to kanalene har forskjellige grensesnitt skal
-    fragsystemet ha ekstra forretningslogikk som knytter sammen to
+    fagsystemet ha ekstra forretningslogikk som knytter sammen to
     meldingsflytene.
 
-**Endinger:**
+**Endringer:**
 
 Med utgangspunkt i disse forutsetningene og den planlagte arkitekturen
 til Helsemeldings plattform, følger her en liste over endringer som må
@@ -22,7 +21,7 @@ gjøres i iSYFO sine tjenester:
 1.  **Ny DialogmeldingToBehandlerBestillingDTO.**
 
 [Dette](https://helsemelding-json-schema.intern.dev.nav.no/api/v1/schemas/outgoing-dialog-message/latest)
-er en dialogmelding bestilling som iSYFO sitt fragsystem skal sende til
+er en dialogmelding bestilling som iSYFO sitt fagsystem skal sende til
 Helsemeldings plattform.
 
 Den er forskjellig fra dagens **DialogmeldingToBehandlerBestillingDTO**
@@ -43,7 +42,7 @@ ved at:
   noe mer enn **BehandlerRef** og at vi kan finne ut om dette er en
   behandler eller kontor for deretter å sette riktige data.
 
-I en overgensperiode skal iSYFO sitt fragsystem forholde seg både til
+I en overgangsperiode skal iSYFO sitt fagsystem forholde seg både til
 **DialogmeldingToBehandlerBestillingDTO** og **OutgoingDialogMessage**.
 
 2.  **Ny DialogmeldingForKafka (innkommende dialogmelding).**
@@ -82,9 +81,9 @@ virker ryddigere å forholde seg til **id** fra Behandlerregisteret.
   grupperes sammen under ny type: **ConversationRef** for bedre
   organisering.
 
-I en overgensperiode skal iSYFO sitt fragsystem forholde seg både til
+I en overgangsperiode skal iSYFO sitt fagsystem forholde seg både til
 
-**IncommingDialogMessage** og **DialogmeldingForKafka**.
+**IncomingDialogMessage** og **DialogmeldingForKafka**.
 
 3.  **isdialogmelding skal rute utgående meldinger enten til
     Helsemeldings plattform eller til eMottak.**
@@ -96,7 +95,7 @@ behandles på en vanlig måte og så videresendes til eMottak.
 Forretningslogikken til denne prosessen er foreløpig ikke fastlagt, men
 vil mest sannsynlig være basert på **behandlerRef.**
 
-![](media/media/image1.png){width="6.3in" height="3.829861111111111in"}
+![](media/media/image1.png)
 
 4.  **Et nytt scenario for behandling av innkommende AppRec.**
 
@@ -107,15 +106,14 @@ Helsemeldings plattform bruker et annet scenario. Den publiserer
 oppdateringer av meldings status i en Kafka topic.
 **MessageStatusEvent** kan inneholde en AppRec eller en feil.
 
-![](media/media/image2.png){width="6.3in" height="3.6840277777777777in"}
+![](media/media/image2.png)
 
 Hvis det skjer en feil ved utsending av en melding i selve Helsemeldings
 plattform, blir en **MessageErrorEvent** sendt til en annen Kafka topic.
 **MessageErrorEvent** inneholder blant annet selve meldingen som
-feilet**.**
+feilet.
 
-![](media/media/image3.png){width="5.84456583552056in"
-height="3.760941601049869in"}
+![](media/media/image3.png)
 
 I overgangsperiode skal **isdialogmelding** forholde seg både til XML
 AppRec-er fra eMottak og hendelsesstrøm fra Helsemeldings plattform.
@@ -126,7 +124,7 @@ Siden Arena relatert funksjonalitet vil før eller senere utfases, skal
 ikke Helsemeldings plattform sende innkommende meldinger til Arena. I
 steder skal **padm2**:
 
-- Hente **InncommingDialogMessage** fra Kafka.
+- Hente **IncomingDialogMessage** fra Kafka.
 
 - Hente meldingens vedlegg fra **attachment-service** tjeneste, hvis det
   finnes.
@@ -136,7 +134,7 @@ steder skal **padm2**:
 - Generere **ArenaDialogNotat** og sende den til Arena på en vanlig
   måte.
 
-I overgensperiode skal også **padm2** prosessere dialogmeldinger som
-kommer fra eMottak på vanlig måte**.**
+I overgangsperiode skal også **padm2** prosessere dialogmeldinger som
+kommer fra eMottak på vanlig måte.
 
-![](media/media/image4.png){width="6.3in" height="3.0215277777777776in"}
+![](media/media/image4.png)
