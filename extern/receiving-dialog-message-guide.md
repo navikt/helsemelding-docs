@@ -57,7 +57,7 @@ Helsemelding platform.
 | `version` | integer | ✅ | Schema version |
 | `id` | string (UUID) | ✅ | Unique identifier of the dialog message |
 | `type` | string (enum) | ✅ | Type of dialog message ([see below](#message-types)) |
-| `receivedAt` | string (ISO 8601, UTC) | ✅ | When the message was received by Helsemelding platform |
+| `receivedAt` | string (ISO 8601, UTC) | ✅ | When the message was received by the Helsemelding platform |
 | `patientIdent` | string | ✅ | National identity number (11 digits) of the patient |
 | `sender.providerId` | string | ✅ | Provider registry ID of the sending healthcare provider |
 | `sender.signingProviderId` | string | ✅ | Provider registry ID of the provider who signed the message |
