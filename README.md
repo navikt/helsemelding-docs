@@ -17,3 +17,8 @@
 
 - [iSYFO migration changes](migration/isyfo_endringer.md)  
   Overview of the changes required in iSYFO services to support the migration to EDI 2.0 and the Helsemelding platform.
+
+### Contact
+
+If you work in [@navikt](https://github.com/navikt) you can reach us at the Slack 
+channel [#team-helsemelding](https://nav-it.slack.com/archives/C0A7WPMMUC9)
