@@ -82,12 +82,12 @@ validated, and converted from XML to JSON by Helsemelding platform.
   "receivedAt": "2024-06-01T10:00:00Z",
   "patientIdent": "12345678901",
   "sender": {
-    "providerId": "123456",
-    "signingProviderId": "123456"
+    "providerId": "08e86b4e-9ffb-403f-b81c-aa81f9408b21",
+    "signingProviderId": "1b010446-2030-49ac-9df4-6df263c0ea28"
   },
   "conversationReference": {
-    "parentMessageId": "2bb9fdc1-f851-4604-ab58-e812a9d3d03e",
-    "conversationId": "91ef57f9-3798-47de-8b5d-6d8748949705"
+    "parentMessageId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+    "conversationId": "3fa85f64-5717-4562-b3fc-2c963f66afa6"
   },
   "message": "The patient requests a follow-up appointment.",
   "numberOfAttachments": 0
