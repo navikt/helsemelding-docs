@@ -49,7 +49,7 @@ The following header is **required** on records produced to the outbound JSON to
 
 | Header | Type | Description |
 |---|---|---|
-| `sourceSystem` | String | Identifier of the producing application (e.g. your Nais application name), ytelse or område |
+| `sourceSystem` | String | Identifier of the producing application (e.g. your Nais application name) or team |
 
 This value will be specified in status updates (in `helsemelding.dialog.out.status`) and error messages (in `helsemelding.dialog.out.error`), 
 so that the producing system can identify status updates and errors related to its own messages.
@@ -101,7 +101,7 @@ validated, and converted from XML to JSON by Helsemelding platform.
 | `version` | integer | ✅ | Schema version |
 | `id` | string (UUID) | ✅ | Unique identifier of the dialog message |
 | `type` | string (enum) | ✅ | Type of dialog message ([see below](#inbound-message-types)) |
-| `receivedAt` | string (ISO 8601, UTC) | ✅ | When the message was received by Helsemelding platform |
+| `receivedAt` | string (ISO 8601, UTC) | ✅ | When the message was received by the Helsemelding platform |
 | `patientIdent` | string | ✅ | National identity number (11 digits) of the patient |
 | `sender.providerId` | string | ✅ | Provider registry ID of the sending healthcare provider |
 | `sender.signingProviderId` | string | ✅ | Provider registry ID of the provider who signed the message |
