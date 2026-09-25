@@ -6,26 +6,26 @@ Helsemelding platform, track its delivery status, and handle errors.
 ## Overview
 
 ```
-  Consumer                         Kafka                        Helsemelding
-      │                               │                               │
-      │─── produce message ────▶ [out.json] ─────── consume ─────────▶│
-      │                               │                               │
-      │◀─── consume ───────── [status.json] ◀─── publish status ──────│
-      │                               │                               │
-      │◀─── consume ────────── [out.error] ◀──── publish on error ────│
-      │                               │                               │
+  Consumer                         Kafka                          Helsemelding
+      │                               │                                 │
+      │─── produce message ────▶ [dialog.out] ──────── consume ────────▶│
+      │                               │                                 │
+      │◀──── consume ────── [dialog.out.status] ◀─── publish status ────│
+      │                               │                                 │
+      │◀──── consume ────── [dialog.out.error] ◀─── publish on error ───│
+      │                               │                                 │
 ```
 
 The consumer is responsible for:
-1. Publishing the outbound message to `helsemelding.dialog.out.json`
-2. Consuming status updates from `helsemelding.dialog.status.json` to track delivery
+1. Publishing the outbound message to `helsemelding.dialog.out`
+2. Consuming status updates from `helsemelding.dialog.out.status` to track delivery
 3. Consuming error events from `helsemelding.dialog.out.error` to detect validation and transport (e.g., network issues) failures
 
 ---
 
-## Step 1: Publish a message to `helsemelding.dialog.out.json`
+## Step 1: Publish a message to `helsemelding.dialog.out`
 
-To send a dialog message, produce a record to `helsemelding.dialog.out.json` with the following
+To send a dialog message, produce a record to `helsemelding.dialog.out` with the following
 requirements:
 
 ### Record key
@@ -44,13 +44,13 @@ The following header is required on every record:
 
 | Header | Value |
 |---|---|
-| `sourceSystem` | Name of your application (e.g. your Nais application name) |
+| `sourceSystem` | Name of your application (e.g. your Nais application name) or team |
 
 Example (Kotlin, using the Kafka Producer API):
 
 ```kotlin
 val record = ProducerRecord<String, String>(
-    "helsemelding.dialog.out.json",
+    "helsemelding.dialog.out",
     messageId,
     payload
 ).apply {
@@ -65,9 +65,9 @@ The record value must be a valid JSON object conforming to the `OutgoingDialogMe
 ```json
 {
   "version": 1,
-  "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+  "id": "a1b2c3d4-5717-4562-b3fc-2c963f66afa6",
   "patientIdent": "12345678901",
-  "providerId": "123456",
+  "providerId": "08e86b4e-9ffb-403f-b81c-aa81f9408b21",
   "conversationReference": {
     "parentMessageId": "a1b2c3d4-5717-4562-b3fc-2c963f66afa6",
     "conversationId": "a1b2c3d4-5717-4562-b3fc-2c963f66afa6"
@@ -86,12 +86,12 @@ The record value must be a valid JSON object conforming to the `OutgoingDialogMe
 | `id` | string (UUID) | ✅ | Unique identifier of the message. |
 | `patientIdent` | string | ✅ | National identity number (11 digits) of the patient. |
 | `providerId` | string | ✅ | Provider registry ID of the receiving healthcare provider or provider office. |
-| `conversationReference` | object \| null | ✅ | Link to an existing conversation, or `null` for new conversations. |
+| `conversationReference` | object \| null | ❌ | Link to an existing conversation, or `null` for new conversations. |
 | `conversationReference.parentMessageId` | string (UUID) | ✅ | ID of the previous message in the conversation. |
 | `conversationReference.conversationId` | string (UUID) | ✅ | ID of the conversation (typically the same as the first message in the thread). |
-| `type` | string (enum) | ✅ | Type of dialog message (see below). |
-| `message` | string \| null | ✅ | Free-text message body. |
-| `attachment` | string \| null | ✅ | Base64-encoded PDF document representing the message. |
+| `type` | string (enum) | ✅ | Type of dialog message ([see below](#message-types)). |
+| `message` | string \| null | ❌ | Free-text message body. |
+| `attachment` | string \| null | ❌ | Base64-encoded PDF document representing the message. |
 
 #### Message types
 
@@ -119,11 +119,11 @@ The record value must be a valid JSON object conforming to the `OutgoingDialogMe
 
 ---
 
-## Step 2: Track delivery status on `helsemelding.dialog.status.json`
+## Step 2: Track delivery status on `helsemelding.dialog.out.status`
 
 After a message is published, the Helsemelding platform publishes status events to
-`helsemelding.dialog.status.json`. Each event is keyed by the `messageId`, which corresponds to
-the Kafka record key used when publishing to `out.json`.
+`helsemelding.dialog.out.status`. Each event is keyed by the `messageId`, which corresponds to
+the Kafka record key used when publishing to `helsemelding.dialog.out`.
 
 ### Status transitions
 
@@ -167,7 +167,7 @@ Use the `messageId` field in the status event to correlate it with the original 
 
 ### Reading the latest status
 
-`helsemelding.dialog.status.json` uses **compact** cleanup policy. This means the topic always
+`helsemelding.dialog.out.status` uses **compact** cleanup policy. This means the topic always
 retains the latest status event per `messageId`, allowing consumers to look up the current
 delivery status of any message at any time — even after a restart.
 
@@ -177,9 +177,9 @@ delivery status of any message at any time — even after a restart.
 
 Error events are published to `helsemelding.dialog.out.error` when a message fails **validation**
 before it is processed by the Helsemelding platform. This is distinct from delivery failures,
-which are reported as `REJECTED_TRANSPORT` or `REJECTED_APPREC` status events on `status.json`.
+which are reported as `REJECTED_TRANSPORT` or `REJECTED_APPREC` status events on `helsemelding.dialog.out.status`.
 
-### When does an error end up on `out.error`?
+### When does an error end up on `helsemelding.dialog.out.error`?
 
 | Error code | Cause |
 |---|---|
@@ -215,8 +215,8 @@ Use the `originalMessage.key` field to correlate the error with the original mes
 | Scenario | Where to look |
 |---|---|
 | Invalid key, value, or missing header | `helsemelding.dialog.out.error` |
-| Message could not be delivered to external system | `helsemelding.dialog.status.json` (`REJECTED_TRANSPORT`) |
-| External system rejected the message | `helsemelding.dialog.status.json` (`REJECTED_APPREC`) |
+| Message could not be delivered to external system | `helsemelding.dialog.out.status` (`REJECTED_TRANSPORT`) |
+| External system rejected the message | `helsemelding.dialog.out.status` (`REJECTED_APPREC`) |
 
 ---
 
@@ -224,9 +224,9 @@ Use the `originalMessage.key` field to correlate the error with the original mes
 
 ### Idempotency
 
-The platform does not deduplicate messages. If the same record key is produced to `out.json`
+The platform does not deduplicate messages. If the same record key is published to `helsemelding.dialog.out`
 multiple times, each message will be processed independently and generate its own status events
-on `status.json`. It is the responsibility of the consumer to ensure each message is published
+on `helsemelding.dialog.out.status`. It is the responsibility of the consumer to ensure each message is published
 only once.
 
 ### No guaranteed timeout for AppRec
@@ -236,9 +236,9 @@ from the receiving external system. There is no guaranteed timeout — if the ex
 never responds, the message will remain in `PENDING_APPREC` indefinitely. The consumer should
 implement its own timeout logic if a timely response is required.
 
-### Consuming `status.json` after a restart
+### Consuming `helsemelding.dialog.out.status` after a restart
 
-Because `helsemelding.dialog.status.json` uses compact cleanup policy, the latest status event
+Because `helsemelding.dialog.out.status` uses compact cleanup policy, the latest status event
 for each message is always available on the topic. A consumer that restarts or falls behind can
 replay the topic from the beginning and reconstruct the current delivery status for all messages
 without missing any final states.
@@ -246,4 +246,4 @@ without missing any final states.
 ### Order of operations
 
 Status events and error events are produced asynchronously. A consumer should not assume that a
-status event will arrive within a specific time window after publishing to `out.json`.
+status event will arrive within a specific time window after publishing to `helsemelding.dialog.out`.
