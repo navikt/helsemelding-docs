@@ -11,14 +11,14 @@ The Helsemelding platform bridges internal NAV systems and external healthcare p
 over Kafka topics on the **Aiven** (`nav-dev` / `nav-prod`) platform.
 
 ```
-  EPJ                                                                           Fagsystem
-   │                                                                               │
-   │────▶ edi-adapter ───▶ [in.xml] ──▶ inbound-processing ───▶ [in] ───▶ consume
-   │                                                                               │
-   │◀─── edi-adapter ◀── [out.xml] ◀── outbound-processing ◀── [out] ◀──── produce
-   │                                           │                                   │
-   │                                     [out.status] ─────────────────────▶ consume (delivery status)
-   │                                     [out.error]  ───────────────────────▶ consume (validation errors)
+  EPJ                                                                                    Fagsystem
+   │                                                                                         │
+   │────▶ edi-adapter ───▶ [dialog.in.xml] ──▶ inbound-processing ───▶ [dialog.in] ──▶ consume
+   │                                                                                         │
+   │◀─── edi-adapter ◀── [dialog.out.xml] ◀── outbound-processing ◀── [dialog.out] ◀─── produce
+   │                                                  │                                      │
+   │                                        [dialog.out.status] ────────────────────────▶ consume (delivery status)
+   │                                        [dialog.out.error]  ────────────────────────▶ consume (validation errors)
 ```
 
 **Topics relevant to internal departments:**
@@ -49,7 +49,7 @@ The following header is **required** on records produced to the outbound JSON to
 
 | Header | Type | Description |
 |---|---|---|
-| `sourceSystem` | String | Identifier of the producing application (e.g. your Nais application name) |
+| `sourceSystem` | String | Identifier of the producing application (e.g. your Nais application name) or team |
 
 This value will be specified in status updates (in `helsemelding.dialog.out.status`) and error messages (in `helsemelding.dialog.out.error`), 
 so that the producing system can identify status updates and errors related to its own messages.
@@ -61,7 +61,7 @@ Records missing this header are rejected and routed to the error topic.
 
 ### `helsemelding.dialog.in`
 
-**Direction:** Helsemelding → Fagsystem
+**Direction:** Helsemelding → Fagsystem  
 **Format:** JSON  
 **Schema version:** v1  
 
@@ -82,12 +82,12 @@ validated, and converted from XML to JSON by Helsemelding platform.
   "receivedAt": "2024-06-01T10:00:00Z",
   "patientIdent": "12345678901",
   "sender": {
-    "providerId": "123456",
-    "signingProviderId": "123456"
+    "providerId": "08e86b4e-9ffb-403f-b81c-aa81f9408b21",
+    "signingProviderId": "1b010446-2030-49ac-9df4-6df263c0ea28"
   },
   "conversationReference": {
-    "parentMessageId": "2bb9fdc1-f851-4604-ab58-e812a9d3d03e",
-    "conversationId": "91ef57f9-3798-47de-8b5d-6d8748949705"
+    "parentMessageId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+    "conversationId": "3fa85f64-5717-4562-b3fc-2c963f66afa6"
   },
   "message": "The patient requests a follow-up appointment.",
   "numberOfAttachments": 0
@@ -101,32 +101,32 @@ validated, and converted from XML to JSON by Helsemelding platform.
 | `version` | integer | ✅ | Schema version |
 | `id` | string (UUID) | ✅ | Unique identifier of the dialog message |
 | `type` | string (enum) | ✅ | Type of dialog message ([see below](#inbound-message-types)) |
-| `receivedAt` | string (ISO 8601, UTC) | ✅ | When the message was received by Helsemelding platform |
+| `receivedAt` | string (ISO 8601, UTC) | ✅ | When the message was received by the Helsemelding platform |
 | `patientIdent` | string | ✅ | National identity number (11 digits) of the patient |
 | `sender.providerId` | string | ✅ | Provider registry ID of the sending healthcare provider |
 | `sender.signingProviderId` | string | ✅ | Provider registry ID of the provider who signed the message |
-| `conversationReference` | object \| null | ✅ | Link to an existing conversation, or `null` for new conversations |
+| `conversationReference` | object \| null | ❌ | Link to an existing conversation, or `null` for new conversations |
 | `conversationReference.parentMessageId` | string (UUID) | ✅ | ID of the previous message in the conversation |
 | `conversationReference.conversationId` | string (UUID) | ✅ | ID of the conversation (typically same as the first message) |
-| `message` | string \| null | ✅ | Free-text message body |
+| `message` | string \| null | ❌ | Free-text message body |
 | `numberOfAttachments` | integer | ✅ | Number of attachments included in the original message |
 
 #### Inbound message types
 
-| Value | Application | Description |
-|---|---|---|
-| `ACCEPTS_MEETING_INVITATION` | Ja, jeg kommer | Healthcare provider accepts a meeting invitation |
-| `REQUESTS_NEW_MEETING_TIME` | Jeg ønsker nytt møtetidspunkt | Healthcare provider requests a new meeting time |
-| `DECLINES_MEETING_WITH_REASON` | Jeg kan ikke komme / begrunnelse for manglende oppmøte | Healthcare provider declines a meeting with a stated reason |
-| `PATIENT_REQUEST_RESPONSE` | Svar på forespørsel | Response to a patient request |
-| `SICK_LEAVE_FOLLOW_UP_INQUIRY` | Henvendelse om sykefraværsoppfølging | Inquiry regarding sick leave follow-up |
-| `PATIENT_INQUIRY` | Henvendelse om pasient | General inquiry from a healthcare provider about a patient |
+| Value | Application | Description | Possible response to |
+|---|---|---|---|
+| `ACCEPTS_MEETING_INVITATION` | Ja, jeg kommer | Healthcare provider accepts a meeting invitation | `MEETING_INVITATION_2`, `MEETING_RESCHEDULE_2`, `MEETING_INVITATION_3`, `MEETING_RESCHEDULE_3` |
+| `REQUESTS_NEW_MEETING_TIME` | Jeg ønsker nytt møtetidspunkt | Healthcare provider requests a new meeting time | `MEETING_INVITATION_2`, `MEETING_RESCHEDULE_2`, `MEETING_INVITATION_3`, `MEETING_RESCHEDULE_3` |
+| `DECLINES_MEETING_WITH_REASON` | Jeg kan ikke komme / begrunnelse for manglende oppmøte | Healthcare provider declines a meeting with a stated reason | `MEETING_INVITATION_2`, `MEETING_RESCHEDULE_2`, `MEETING_INVITATION_3`, `MEETING_RESCHEDULE_3` |
+| `PATIENT_REQUEST_RESPONSE` | Svar på forespørsel | Response to a patient request | `PATIENT_REQUEST`, `PATIENT_REQUEST_REMINDER` |
+| `SICK_LEAVE_FOLLOW_UP_INQUIRY` | Henvendelse om sykefraværsoppfølging | Inquiry regarding sick leave follow-up | N/A |
+| `PATIENT_INQUIRY` | Henvendelse om pasient | General inquiry from a healthcare provider about a patient | N/A |
 
 ---
 
 ### `helsemelding.dialog.out`
 
-**Direction:** Fagsystem → Helsemelding 
+**Direction:** Fagsystem → Helsemelding  
 **Format:** JSON  
 **Schema version:** v1  
 
@@ -144,14 +144,14 @@ validates the message, converts it to XML, and forwards it via the EDI-adapter.
   "version": 1,
   "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
   "patientIdent": "12345678901",
-  "providerId": "123456",
+  "providerId": "08e86b4e-9ffb-403f-b81c-aa81f9408b21",
   "conversationReference": {
-    "parentMessageId": "2bb9fdc1-f851-4604-ab58-e812a9d3d03e",
-    "conversationId": "91ef57f9-3798-47de-8b5d-6d8748949705"
+    "parentMessageId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+    "conversationId": "3fa85f64-5717-4562-b3fc-2c963f66afa6"
   },
   "type": "MEETING_INVITATION_2",
   "message": "We would like to invite the patient to a meeting on June 10.",
-  "attachment": null
+  "attachment": "JVBERi0xLjQKJcOkw7zDtsO..."
 }
 ```
 
@@ -163,43 +163,44 @@ validates the message, converts it to XML, and forwards it via the EDI-adapter.
 | `id` | string (UUID) | ✅ | Unique identifier of the dialog message — **must match the Kafka record key** |
 | `patientIdent` | string | ✅ | National identity number (11 digits) of the patient |
 | `providerId` | string | ✅ | Provider registry ID of the receiving healthcare provider or provider office |
-| `conversationReference` | object \| null | ✅ | Link to an existing conversation, or `null` for new conversations. This value is ignored for `FOLLOW_UP_PLAN` message type. |
+| `conversationReference` | object \| null | ❌ | Link to an existing conversation, or `null` for new conversations. This value is ignored for `FOLLOW_UP_PLAN` message type. |
 | `conversationReference.parentMessageId` | string (UUID) | ✅ | ID of the previous message in the conversation. If not specified, `id` value will be used. |
 | `conversationReference.conversationId` | string (UUID) | ✅ | ID of the conversation. If not specified, `id` value will be used. |
 | `type` | string (enum) | ✅ | Type of dialog message ([see below](#outbound-message-types)) |
-| `message` | string \| null | ✅ | Free-text message body |
-| `attachment` | string \| null | ✅ | Attachment encoded as a Base64 string, or `null` |
-
-
-
+| `message` | string \| null | ❌ | Free-text message body |
+| `attachment` | string \| null | ❌ | Attachment encoded as a Base64 string, or `null` |
 
 `conversationReference` is ignored for `FOLLOW_UP_PLAN` message type.
 
-
 #### Outbound message types
 
-| Value | Application | Description |
-|---|---|---|
-| `MEETING_INVITATION_2` | Innkalling dialogmøte 2 | Invitation to a meeting (dialogmelding 2) |
-| `MEETING_RESCHEDULE_2` | Endring dialogmøte 2 | Reschedule request for a meeting (dialogmelding 2) |
-| `MEETING_INVITATION_3` | Innkalling dialogmøte 3 | Invitation to a meeting (dialogmelding 3) |
-| `MEETING_RESCHEDULE_3` | Endring dialogmøte 3 | Reschedule request for a meeting (dialogmelding 3) |
-| `PATIENT_REQUEST` | Forespørsel om pasient | Request concerning a patient |
-| `PATIENT_REQUEST_REMINDER` | Påminnelse forespørsel om pasient | Reminder for an unanswered patient request |
-| `FOLLOW_UP_PLAN` | Oppfølgingsplan | Follow-up plan for a patient |
-| `RETURN_TO_WORK_NOTIFICATION` | Friskmelding til arbeidsformidling | Notification about return-to-work |
-| `MEDICAL_CERTIFICATE_RETURN` | Retur av legeerklæring | Return of a medical certificate |
-| `MEETING_CANCELLATION` | Avlysning dialogmøte | Cancellation of a meeting |
-| `MEETING_EXEMPTION` | Unntak dialogmøte | Meeting exemption notification |
-| `NAV_FEEDBACK` | Tilbakemelding fra NAV | Feedback from NAV |
-| `NAV_MESSAGE` | Melding fra NAV | General message from NAV |
-| `NAV_INFORMATION` | Informasjon fra NAV | Informational message from NAV |
+| Value | Application | Description | Response requirement |
+|---|---|---|---|
+| `MEETING_INVITATION_2` | Innkalling dialogmøte 2 | Invitation to a dialog meeting (dialogmøte). Contains the proposed meeting time and location. | Must be shown in the EPJ system immediately upon receipt. If the doctor does not respond, the proposed time and place is considered accepted. |
+| `MEETING_RESCHEDULE_2` | Endring dialogmøte 2 | Reschedule of a dialog meeting. Contains the previous and the new proposed meeting time and location. | Same as `MEETING_INVITATION_2`. |
+| `MEETING_INVITATION_3` | Innkalling dialogmøte 3 | Invitation to a dialog meeting, third meeting in the sequence. | Same as `MEETING_INVITATION_2`. |
+| `MEETING_RESCHEDULE_3` | Endring dialogmøte 3 | Reschedule of a dialog meeting, third meeting in the sequence. | Same as `MEETING_INVITATION_2`. |
+| `PATIENT_REQUEST` | Forespørsel om pasient | Request concerning a patient. Contains various questions and information about a specific patient. | Must be shown in the EPJ system immediately upon receipt. NAV automatically sends reminder letters if the response deadline is not met. |
+| `PATIENT_REQUEST_REMINDER` | Påminnelse forespørsel om pasient | Reminder to answer a previously sent patient request. | Same as `PATIENT_REQUEST`. |
+| `FOLLOW_UP_PLAN` | Oppfølgingsplan | Follow-up plan for a patient. | — |
+| `RETURN_TO_WORK_NOTIFICATION` | Friskmelding til arbeidsformidling | Contains a copy of the decision on return-to-work notification (friskmelding til arbeidsformidling) sent to the sick-listed person. | Informational — should be filed in the patient's record in the EPJ system. |
+| `MEDICAL_CERTIFICATE_RETURN` | Retur av legeerklæring | Contains a request to submit a new medical certificate. | Must be answered by submitting a new medical certificate. The doctor should be made aware of this as soon as it is received. |
+| `MEETING_CANCELLATION` | Avlysning dialogmøte | Contains information that a previously scheduled dialog meeting has been cancelled. | The doctor should be made aware of this as soon as it is received. |
+| `MEETING_EXEMPTION` | Unntak dialogmøte | Contains information that an exemption has been granted from the requirement to hold a dialog meeting for a long-term sick-listed person. | Informational — should be filed in the patient's record in the EPJ system. |
+| `NAV_FEEDBACK` | Tilbakemelding fra NAV | Feedback from a NAV caseworker on a previous inquiry from the doctor to NAV. | The doctor should be made aware of this as soon as it is received. |
+| `NAV_MESSAGE` | Melding fra NAV | Other messages from NAV, which may be automatically generated. | The doctor should be made aware of this as soon as it is received. |
+| `NAV_INFORMATION` | Informasjon fra NAV | Other information from NAV. | Informational — should be filed in the patient's record in the EPJ system. |
+
+> ℹ️ Message types under `MEETING_INVITATION_*` / `MEETING_RESCHEDULE_*` and `PATIENT_REQUEST*`
+> require a response from the doctor and can be answered more than once for the same request
+> (e.g. an initial "I will attend" followed later by "I cannot attend" with a reason). All other
+> message types are informational and do not have a defined response message.
 
 ---
 
 ### `helsemelding.dialog.out.status`
 
-**Direction:** Helsemelding → Fagsystem
+**Direction:** Helsemelding → Fagsystem  
 **Format:** JSON  
 
 Contains delivery status updates for outbound messages as they are processed by Helsemelding platform and
@@ -280,7 +281,7 @@ For processing errors, `error` contains an error code and details, while `apprec
 
 ### `helsemelding.dialog.out.error`
 
-**Direction:** Helsemelding → Fagsystem
+**Direction:** Helsemelding → Fagsystem  
 **Format:** JSON  
 
 Contains messages that were **rejected** during outbound validation (produced to
