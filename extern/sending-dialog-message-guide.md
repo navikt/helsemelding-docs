@@ -224,7 +224,7 @@ Use the `originalMessage.key` field to correlate the error with the original mes
 
 ### Idempotency
 
-The platform does not deduplicate messages. If the same record key is published to `helsemelding.dialog.out`
+The platform does not deduplicate messages. If the same message `id` is published to `helsemelding.dialog.out`
 multiple times, each message will be processed independently and generate its own status events
 on `helsemelding.dialog.out.status`. It is the responsibility of the consumer to ensure each message is published
 only once.
