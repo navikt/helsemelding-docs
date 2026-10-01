@@ -28,6 +28,9 @@ Inbound dialog messages are published to `helsemelding.dialog.in` after they hav
 received from the external healthcare provider, validated, and converted from XML to JSON by the
 Helsemelding platform.
 
+Messages on this topic do not have a Kafka record key. Use the `id` field in the record value as
+the dialog message identifier.
+
 ### Record value
 
 ```json
@@ -83,7 +86,7 @@ Helsemelding platform.
 ## Step 2: Fetch attachments from the Attachment Service
 
 If `numberOfAttachments` is greater than `0`, fetch the attachments from the Attachment Service
-using the `id` from the consumed record as the `messageId`.
+using the `id` field in the consumed record value as the `messageId` parameter.
 
 ### Option A: Using [`HttpAttachmentClient`](https://github.com/navikt/helsemelding-attachment-service/releases) (recommended)
 
