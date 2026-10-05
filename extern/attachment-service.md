@@ -56,7 +56,7 @@ Retrieves all attachments stored for a given message.
 
 | Parameter | Type | Description |
 |---|---|---|
-| `messageId` | string (UUID) | Unique identifier of the message. |
+| `messageId` | string (UUID) | Unique identifier of the message. Use the value in the inbound dialog message's `id` field. |
 
 #### Response body
 
