@@ -34,15 +34,6 @@ over Kafka topics on the **Aiven** (`nav-dev` / `nav-prod`) platform.
 
 ## Common Record Format
 
-All topics use **String serialization** for both key and value.
-
-### Record Key
-
-The Kafka record key **must** be a valid UUID.  
-Example: `3fa85f64-5717-4562-b3fc-2c963f66afa6`
-
-Records with a missing or non-UUID key are rejected and routed to the error topic.
-
 ### Kafka Headers
 
 The following header is **required** on records produced to the outbound JSON topic:
@@ -73,6 +64,8 @@ validated, and converted from XML to JSON by Helsemelding platform.
 - [v1](https://helsemelding-json-schema.intern.dev.nav.no/api/v1/schemas/incoming-dialog-message/v1)
 
 #### Message structure
+
+All topics use **String serialization** for value.
 
 ```json
 {
@@ -160,7 +153,7 @@ validates the message, converts it to XML, and forwards it via the EDI-adapter.
 | Field | Type | Required | Description |
 |---|---|---|---|
 | `version` | integer | ✅ | Schema version |
-| `id` | string (UUID) | ✅ | Unique identifier of the dialog message — **must match the Kafka record key** |
+| `id` | string (UUID) | ✅ | Unique identifier of the dialog message. The platform uses this ID to correlate status updates and processing results. |
 | `patientIdent` | string | ✅ | National identity number (11 digits) of the patient |
 | `providerId` | string | ✅ | Provider registry ID of the receiving healthcare provider or provider office |
 | `conversationReference` | object \| null | ❌ | Link to an existing conversation, or `null` for new conversations. This value is ignored for `FOLLOW_UP_PLAN` message type. |
@@ -251,7 +244,7 @@ For processing errors, `error` contains an error code and details, while `apprec
 
 | Field | Type | Required | Description |
 |---|---|---|---|
-| `messageId` | string (UUID) | ✅ | ID of the outbound message (matches the Kafka record key on `out`) |
+| `messageId` | string (UUID) | ✅ | ID of the outbound message, taken from the `id` field in its JSON value |
 | `timestamp` | string (ISO 8601, UTC) | ✅ | When this status event was produced |
 | `status` | string (enum) | ✅ | Current status of the message (see below) |
 | `apprec` | object \| null | ❌ | Acknowledgement information returned by the receiving healthcare system. Present when an AppRec has been received. |
@@ -303,7 +296,6 @@ to detect and handle delivery failures.
   ],
   "originalMessage": {
     "createdAt": "2024-06-01T10:04:59Z",
-    "key": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
     "payload": "<the original message value>"
   }
 }
@@ -320,14 +312,12 @@ to detect and handle delivery failures.
 | `errors[].code` | string (enum) | Machine-readable error code (see below) |
 | `errors[].message` | string | Human-readable error description |
 | `originalMessage.createdAt` | string (ISO 8601, UTC) | Timestamp of the original record |
-| `originalMessage.key` | string | Kafka record key of the rejected message |
 | `originalMessage.payload` | string | Original record value |
 
 #### Error codes
 
 | Code | Cause |
 |---|---|
-| `INVALID_KAFKA_KEY` | The record key is missing or is not a valid UUID |
 | `INVALID_KAFKA_VALUE` | The record value is null, empty, or not valid JSON. Check [JSON schema](https://helsemelding-json-schema.intern.dev.nav.no/api/v1/schemas/outgoing-dialog-message/latest) (accessible via NAIS-device) to get the expected structure. |
 | `MISSING_SOURCE_SYSTEM_HEADER` | The required [`sourceSystem` Kafka header](#kafka-headers) is absent or empty |
 

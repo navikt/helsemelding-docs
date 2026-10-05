@@ -25,18 +25,7 @@ The consumer is responsible for:
 
 ## Step 1: Publish a message to `helsemelding.dialog.out`
 
-To send a dialog message, produce a record to `helsemelding.dialog.out` with the following
-requirements:
-
-### Record key
-
-The record key must be a **unique UUID** that identifies the message. This ID is used to correlate
-status updates and error events back to the original message.
-
-Example:
-```
-3fa85f64-5717-4562-b3fc-2c963f66afa6
-```
+To send a dialog message, produce a record to `helsemelding.dialog.out` with the following requirements:
 
 ### Kafka header
 
@@ -51,7 +40,6 @@ Example (Kotlin, using the Kafka Producer API):
 ```kotlin
 val record = ProducerRecord<String, String>(
     "helsemelding.dialog.out",
-    messageId,
     payload
 ).apply {
     headers().add(RecordHeader("sourceSystem", "my-fagsystem".toByteArray()))
@@ -122,8 +110,8 @@ The record value must be a valid JSON object conforming to the `OutgoingDialogMe
 ## Step 2: Track delivery status on `helsemelding.dialog.out.status`
 
 After a message is published, the Helsemelding platform publishes status events to
-`helsemelding.dialog.out.status`. Each event is keyed by the `messageId`, which corresponds to
-the Kafka record key used when publishing to `helsemelding.dialog.out`.
+`helsemelding.dialog.out.status`. Each event is keyed by `messageId`, taken from the `id` field
+in the original JSON value.
 
 ### Status transitions
 
@@ -183,13 +171,12 @@ which are reported as `REJECTED_TRANSPORT` or `REJECTED_APPREC` status events on
 
 | Error code | Cause |
 |---|---|
-| `INVALID_KAFKA_KEY` | The record key is missing or is not a valid UUID |
 | `INVALID_KAFKA_VALUE` | The record value is null, empty, or not valid JSON |
 | `MISSING_SOURCE_SYSTEM_HEADER` | The required `sourceSystem` Kafka header is absent or empty |
 
 ### Correlating error events
 
-Use the `originalMessage.key` field to correlate the error with the original message:
+Use the `originalMessage.payload` field to inspect the rejected message:
 
 ```json
 {
@@ -204,7 +191,6 @@ Use the `originalMessage.key` field to correlate the error with the original mes
   ],
   "originalMessage": {
     "createdAt": "2024-06-01T10:04:59Z",
-    "key": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
     "payload": "{ ... }"
   }
 }
@@ -214,7 +200,7 @@ Use the `originalMessage.key` field to correlate the error with the original mes
 
 | Scenario | Where to look |
 |---|---|
-| Invalid key, value, or missing header | `helsemelding.dialog.out.error` |
+| Invalid value or missing header | `helsemelding.dialog.out.error` |
 | Message could not be delivered to external system | `helsemelding.dialog.out.status` (`REJECTED_TRANSPORT`) |
 | External system rejected the message | `helsemelding.dialog.out.status` (`REJECTED_APPREC`) |
 
