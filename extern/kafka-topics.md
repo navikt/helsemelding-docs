@@ -68,8 +68,7 @@ Records missing this header are rejected and routed to the error topic.
 Contains inbound dialog messages that have been received from external healthcare providers,
 validated, and converted from XML to JSON by Helsemelding platform.
 
-Messages on this topic are published without a Kafka record key. Use the `id` field in the JSON
-value as the dialog message identifier.
+Use the `id` field in the JSON value as the dialog message identifier.
 
 **JSON schema (accessible via NAIS-device):**
 - [Latest](https://helsemelding-json-schema.intern.dev.nav.no/api/v1/schemas/incoming-dialog-message/latest)

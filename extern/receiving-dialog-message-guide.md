@@ -28,8 +28,7 @@ Inbound dialog messages are published to `helsemelding.dialog.in` after they hav
 received from the external healthcare provider, validated, and converted from XML to JSON by the
 Helsemelding platform.
 
-Messages on this topic do not have a Kafka record key. Use the `id` field in the record value as
-the dialog message identifier.
+Use the `id` field in the record value as the dialog message identifier.
 
 ### Record value
 
