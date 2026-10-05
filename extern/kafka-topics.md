@@ -227,6 +227,10 @@ delivery status for any message, even if they missed earlier status transitions.
 }
 ```
 
+> ℹ️  Consumers can ignore the field `apprec` as it's used for internal debugging. If `apprec.errorList` happen to be
+> non-empty, then contact `Team Helsemelding` for further assistance. This type of error should rarely occur and is 
+> not an error caused by the consumer.
+
 For processing errors, `error` contains an error code and details, while `apprec` is `null`:
 
 ```json
