@@ -34,13 +34,6 @@ over Kafka topics on the **Aiven** (`nav-dev` / `nav-prod`) platform.
 
 ## Common Record Format
 
-All topics use **String serialization** for both key and value.
-
-### Record key on `helsemelding.dialog.out`
-
-Do not set a Kafka record key on this topic. The Helsemelding platform identifies outbound
-messages using the `id` field in the JSON value.
-
 ### Kafka Headers
 
 The following header is **required** on records produced to the outbound JSON topic:
@@ -71,6 +64,8 @@ validated, and converted from XML to JSON by Helsemelding platform.
 - [v1](https://helsemelding-json-schema.intern.dev.nav.no/api/v1/schemas/incoming-dialog-message/v1)
 
 #### Message structure
+
+All topics use **String serialization** for value.
 
 ```json
 {

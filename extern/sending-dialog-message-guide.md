@@ -25,13 +25,7 @@ The consumer is responsible for:
 
 ## Step 1: Publish a message to `helsemelding.dialog.out`
 
-To send a dialog message, produce a record to `helsemelding.dialog.out` with the following
-requirements:
-
-### Record key
-
-Do not set a Kafka record key. The Helsemelding platform uses the `id` field in the JSON value to
-identify the message and correlate status updates.
+To send a dialog message, produce a record to `helsemelding.dialog.out` with the following requirements:
 
 ### Kafka header
 
