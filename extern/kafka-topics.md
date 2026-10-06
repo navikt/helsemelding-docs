@@ -163,7 +163,7 @@ validates the message, converts it to XML, and forwards it via the EDI-adapter.
 | `conversationReference.conversationId` | string (UUID) | ✅ | ID of the conversation. If not specified, `id` value will be used. |
 | `type` | string (enum) | ✅ | Type of dialog message ([see below](#outbound-message-types)) |
 | `message` | string \| null | ❌ | Free-text message body |
-| `attachment` | string \| null | ❌ | Attachment encoded as a Base64 string, or `null` |
+| `attachment` | string \| null | ❌ | Base64-encoded PDF document representing the message. Maximum 1 MB |
 
 `conversationReference` is ignored for `FOLLOW_UP_PLAN` message type.
 
@@ -190,6 +190,19 @@ validates the message, converts it to XML, and forwards it via the EDI-adapter.
 > require a response from the doctor and can be answered more than once for the same request
 > (e.g. an initial "I will attend" followed later by "I cannot attend" with a reason). All other
 > message types are informational and do not have a defined response message.
+
+#### Validation
+
+In general the validation is the same across all outbound message types. However, there is one exception when it 
+comes to `FOLLOW_UP_PLAN`:
+- Provided `conversationReference` is ignored and not included in the created message
+- Requires an attachment
+- Provided `message text` is ignored and replaced with the following value: `Åpne PDF-vedlegg`
+
+**For all other outbound message types the following applies:**
+- `conversationReference` is used if provided
+- If no `conversationReference` is provided then the provided `message id` is used as `parentMessageId` and
+  `conversationId` because this will be considered the first message in the conversation.
 
 ---
 
