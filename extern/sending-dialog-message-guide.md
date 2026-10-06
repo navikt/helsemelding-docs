@@ -153,6 +153,10 @@ Use the `messageId` field in the status event to correlate it with the original 
 }
 ```
 
+> ℹ️  Consumers can ignore the field `apprec` as it's used for internal debugging. If `apprec.errorList` happen to be
+> non-empty, then contact `Team Helsemelding` for further assistance. This type of error should rarely occur and is
+> not an error caused by the consumer.
+
 ### Reading the latest status
 
 `helsemelding.dialog.out.status` uses **compact** cleanup policy. This means the topic always
