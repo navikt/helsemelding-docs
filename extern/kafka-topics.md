@@ -103,27 +103,27 @@ All topics use **String serialization** for value.
 
 | Field | Type | Required | Description |
 |---|---|---|---|
-| `version` | integer | ✅ | Schema version |
+| `version` | integer | ✅ | The current schema version |
 | `id` | string (UUID) | ✅ | Unique identifier of the dialog message |
 | `type` | string (enum) | ✅ | Type of dialog message ([see below](#inbound-message-types)) |
-| `receivedAt` | string (ISO 8601, UTC) | ✅ | When the message was received by the Helsemelding platform |
+| `receivedAt` | string (ISO 8601, UTC) | ✅ | Date and time the dialog message was received (UTC) |
 | `patientIdent` | string | ✅ | National identity number (11 digits) of the patient |
-| `provider` | object | ✅ | Healthcare provider and office information from the message |
-| `provider.ident` | string | ✅ | National identity number (11 digits) of the healthcare provider |
-| `provider.hprNumber` | string \| null | ❌ | HPR number of the healthcare provider, if present |
-| `provider.office` | object | ✅ | Healthcare provider's office information |
-| `provider.office.orgNumber` | string \| null | ❌ | Organisation number, if present |
+| `provider` | object | ✅ | Information about the healthcare provider specified in the message |
+| `provider.ident` | string | ✅ | National identity number (11 digits) of the healthcare provider specified in the message |
+| `provider.hprNumber` | string \| null | ❌ | HPR-number in the Helsepersonellregisteret of the healthcare provider specified in the message |
+| `provider.office` | object | ✅ | Information about the healthcare provider's office specified in the message |
+| `provider.office.orgNumber` | string \| null | ❌ | Organisation number in the Enhetsregisteret of the healthcare provider's office |
 | `provider.office.orgName` | string | ✅ | Name of the healthcare provider's office |
-| `provider.office.herId` | string \| null | ❌ | HER-id of the healthcare provider, if present |
-| `signature` | object | ✅ | Signature information. |
-| `signature.signingProviderIdent` | string | ✅ | National identity number (11 digits) of the signing healthcare provider |
-| `signature.signedAt` | string (ISO 8601, UTC) | ✅ | Time associated with the signature |
-| `documentId` | string | ✅ | Document ID from the first note in the message |
-| `conversationReference` | object \| null | ❌ | Link to an existing conversation, or `null` for new conversations |
-| `conversationReference.parentMessageId` | string (UUID) | ✅ | ID of the previous message in the conversation |
-| `conversationReference.conversationId` | string (UUID) | ✅ | ID of the conversation (typically same as the first message) |
-| `message` | string \| null | ❌ | Free-text message body |
-| `numberOfAttachments` | integer | ✅ | Number of attachments included in the original message |
+| `provider.office.herId` | string \| null | ❌ | HER-id in the Adresseregisteret of the healthcare provider's office |
+| `signature` | object | ✅ | Information about the signature |
+| `signature.signingProviderIdent` | string | ✅ | National identity number (11 digits) of the healthcare provider who signed the message |
+| `signature.signedAt` | string (ISO 8601, UTC) | ✅ | Date and time the message was signed |
+| `documentId` | string | ✅ | Document ID of the message in the document archive |
+| `conversationReference` | object \| null | ❌ | Information about the conversation |
+| `conversationReference.parentMessageId` | string (UUID) | ✅ | Reference to previous dialog message in conversation |
+| `conversationReference.conversationId` | string (UUID) | ✅ | Reference to conversation (typically the same id as initial dialog message) |
+| `message` | string \| null | ❌ | Message text |
+| `numberOfAttachments` | integer | ✅ | Number of attachments |
 
 #### Inbound message types
 
