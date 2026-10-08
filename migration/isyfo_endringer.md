@@ -60,7 +60,8 @@ feltene i **IncomingDialogMessage**.
 | `mottattTidspunkt` | `receivedAt` | Nytt navn. |
 | `personIdentPasient` | `patientIdent` | Pasientens ident får nytt feltnavn. |
 | `conversationRef`, `parentRef` | `conversationReference.conversationId`, `conversationReference.parentMessageId` | Samles i et objekt. Hele `conversationReference` kan være `null`. |
-| `dialogmelding` | `message`, `type`, `signature`, `documentId` | Den nye modellen har ikke den gamle, nestede strukturen. `message` inneholder meldingsteksten, og `documentId` hentes fra første notat. Andre strukturerte detaljer, som forespørsels- og møtesvarfelter, følger ikke med som egne felt. `type` og signaturfeltene er beskrevet nedenfor. |
+| `dialogmelding` | `message`, `type`, `signature` | Den nye modellen har ikke den gamle, nestede strukturen. `message` inneholder meldingsteksten. Andre strukturerte detaljer, som forespørsels- og møtesvarfelter, følger ikke med som egne felt. |
+| Ingen | `documentId` | Finnes ikke i den gamle modellen. Converteren henter verdien fra første notat. |
 | `personIdentBehandler` | `provider.ident` | Behandlerens ident flyttes til `provider`. |
 | `legehpr` | `provider.hprNumber` | HPR-nummeret flyttes til `provider`. Feltet kan være `null`. |
 | `legekontorOrgNr`, `legekontorOrgName`, `legekontorHerId` | `provider.office.orgNumber`, `provider.office.orgName`, `provider.office.herId` | Kontoropplysningene samles under `provider.office`. Organisasjonsnummer og HER-id kan være `null`. |
