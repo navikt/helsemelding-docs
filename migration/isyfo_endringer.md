@@ -53,33 +53,22 @@ fagsystem.
 
 Den er forskjellig fra dagens **DialogmeldingForKafka** ved at:
 
-- **navLogId** fjernes ettersom det ser ut til å ha med eMottak å gjøre.
-
-- **behandlerRef** og **legeSignaturRef** grupperes sammen under ny
-
-type **Sender** ettersom begge to er informasjon om avsender.
-
-- **personIdentBehandler** erstattes av **Sender.behandlerRef** ettersom
-  det
-
-virker ryddigere å forholde seg til **id** fra Behandlerregisteret.
-
-- **legekontorOrgNr**, **legekontorHerId**, **legekontorReshId**,
-  legekontorOrgName, legehpr er tiltenkt å fjernes ettersom den
-  informasjon burde kunne hentes fra behandlerregisteret basert på
-  **Sender.behandlerRef** (eller **Sender.legeSignaturRef**) (dette skal
-  dobbeltsjekkes også).
-
-- **journalpostId** fjernes ettersom Helsemeldings plattform ikke skal
-  arkivere noe.
-
-- **fellesformatXML** fjernes ettersom konsumentene skal slippe å
-  forholde seg til dette og skal ikke ha behov for informasjon i XML (i
-  så fall bør topic utvides)
-
-- **dialogmeldingRefParent** og **dialogmeldingRefConversation**
-  grupperes sammen under ny type: **ConversationRef** for bedre
-  organisering.
+- `msgId`, `msgType` og `mottattTidspunkt` blir til `id`, `type` og
+  `receivedAt`.
+- `personIdentPasient` blir til `patientIdent`.
+- `conversationRef` og `parentRef` samles i `conversationReference`, med feltene
+  `conversationId` og `parentMessageId`.
+- Den nestede `dialogmelding`-strukturen erstattes av `message`, `type`,
+  `signature` og `documentId`. `message` inneholder meldingsteksten. Den øvrige strukturerte dialogmelding-
+  informasjonen følger ikke med som egne felt.
+- Behandler- og kontoropplysningene samles i `provider` og `provider.office`.
+  Modellen har behandlerens ident og HPR-nummer, samt kontorets organisasjonsnummer,
+  navn og HER-id. `legekontorReshId` og aktør-ID-ene har ikke egne felt i den nye modellen.
+- `signature.signingProviderIdent` inneholder behandlerens personlig ident som er angitt i signaturen.
+  `signature.signedAt` inneholder datoen og klokkeslettet som er angitt i signaturen.
+- `antallVedlegg` erstattes av `numberOfAttachments`.
+- `navLogId`, `journalpostId` og `fellesformatXML` finnes ikke i den nye modellen.
+- Den nye modellen har også feltet `version`, uten et tilsvarende felt i den gamle.
 
 I en overgangsperiode skal iSYFO sitt fagsystem forholde seg både til
 

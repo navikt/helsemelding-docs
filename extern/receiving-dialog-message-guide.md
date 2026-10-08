@@ -39,10 +39,20 @@ Use the `id` field in the record value as the dialog message identifier.
   "type": "PATIENT_INQUIRY",
   "receivedAt": "2024-06-01T10:00:00Z",
   "patientIdent": "12345678901",
-  "sender": {
-    "providerId": "08e86b4e-9ffb-403f-b81c-aa81f9408b21",
-    "signingProviderId": "1b010446-2030-49ac-9df4-6df263c0ea28"
+  "provider": {
+    "ident": "12345678901",
+    "hprNumber": "123456",
+    "office": {
+      "orgNumber": "123456789",
+      "orgName": "Example Medical Office",
+      "herId": "123456"
+    }
   },
+  "signature": {
+    "signingProviderIdent": "12345678901",
+    "signedAt": "2024-06-01T09:55:00Z"
+  },
+  "documentId": "OD2503016631907",
   "conversationReference": {
     "parentMessageId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
     "conversationId": "3fa85f64-5717-4562-b3fc-2c963f66afa6"
@@ -61,8 +71,17 @@ Use the `id` field in the record value as the dialog message identifier.
 | `type` | string (enum) | ✅ | Type of dialog message ([see below](#message-types)) |
 | `receivedAt` | string (ISO 8601, UTC) | ✅ | When the message was received by the Helsemelding platform |
 | `patientIdent` | string | ✅ | National identity number (11 digits) of the patient |
-| `sender.providerId` | string | ✅ | Provider registry ID of the sending healthcare provider |
-| `sender.signingProviderId` | string | ✅ | Provider registry ID of the provider who signed the message |
+| `provider` | object | ✅ | Healthcare provider and office information from the message |
+| `provider.ident` | string | ✅ | National identity number (11 digits) of the healthcare provider |
+| `provider.hprNumber` | string \| null | ❌ | HPR number of the healthcare provider, if present |
+| `provider.office` | object | ✅ | Healthcare provider's office information |
+| `provider.office.orgNumber` | string \| null | ❌ | Organisation number, if present |
+| `provider.office.orgName` | string | ✅ | Name of the healthcare provider's office |
+| `provider.office.herId` | string \| null | ❌ | HER-id of the healthcare provider, if present |
+| `signature` | object | ✅ | Signature information. |
+| `signature.signingProviderIdent` | string | ✅ | National identity number (11 digits) of the signing healthcare provider |
+| `signature.signedAt` | string (ISO 8601, UTC) | ✅ | Time associated with the signature |
+| `documentId` | string | ✅ | Document ID from the first note in the message |
 | `conversationReference` | object \| null | ❌ | Link to an existing conversation, or `null` for new conversations |
 | `conversationReference.parentMessageId` | string (UUID) | ✅ | ID of the previous message in the conversation |
 | `conversationReference.conversationId` | string (UUID) | ✅ | ID of the conversation (typically same as the first message) |
