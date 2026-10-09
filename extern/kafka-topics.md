@@ -76,10 +76,20 @@ All topics use **String serialization** for value.
   "type": "PATIENT_INQUIRY",
   "receivedAt": "2024-06-01T10:00:00Z",
   "patientIdent": "12345678901",
-  "sender": {
-    "providerId": "08e86b4e-9ffb-403f-b81c-aa81f9408b21",
-    "signingProviderId": "1b010446-2030-49ac-9df4-6df263c0ea28"
+  "provider": {
+    "ident": "12345678901",
+    "hprNumber": "123456",
+    "office": {
+      "orgNumber": "123456789",
+      "orgName": "Example Medical Office",
+      "herId": "123456"
+    }
   },
+  "signature": {
+    "signingProviderIdent": "12345678901",
+    "signedAt": "2024-06-01T09:55:00Z"
+  },
+  "documentId": "OD2503016631907",
   "conversationReference": {
     "parentMessageId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
     "conversationId": "3fa85f64-5717-4562-b3fc-2c963f66afa6"
@@ -93,18 +103,27 @@ All topics use **String serialization** for value.
 
 | Field | Type | Required | Description |
 |---|---|---|---|
-| `version` | integer | ✅ | Schema version |
+| `version` | integer | ✅ | The current schema version |
 | `id` | string (UUID) | ✅ | Unique identifier of the dialog message |
 | `type` | string (enum) | ✅ | Type of dialog message ([see below](#inbound-message-types)) |
-| `receivedAt` | string (ISO 8601, UTC) | ✅ | When the message was received by the Helsemelding platform |
+| `receivedAt` | string (ISO 8601, UTC) | ✅ | Date and time the dialog message was received (UTC) |
 | `patientIdent` | string | ✅ | National identity number (11 digits) of the patient |
-| `sender.providerId` | string | ✅ | Provider registry ID of the sending healthcare provider |
-| `sender.signingProviderId` | string | ✅ | Provider registry ID of the provider who signed the message |
-| `conversationReference` | object \| null | ❌ | Link to an existing conversation, or `null` for new conversations |
-| `conversationReference.parentMessageId` | string (UUID) | ✅ | ID of the previous message in the conversation |
-| `conversationReference.conversationId` | string (UUID) | ✅ | ID of the conversation (typically same as the first message) |
-| `message` | string \| null | ❌ | Free-text message body |
-| `numberOfAttachments` | integer | ✅ | Number of attachments included in the original message |
+| `provider` | object | ✅ | Information about the healthcare provider specified in the message |
+| `provider.ident` | string | ✅ | National identity number (11 digits) of the healthcare provider specified in the message |
+| `provider.hprNumber` | string \| null | ❌ | HPR-number in the Helsepersonellregisteret of the healthcare provider specified in the message |
+| `provider.office` | object | ✅ | Information about the healthcare provider's office specified in the message |
+| `provider.office.orgNumber` | string \| null | ❌ | Organisation number in the Enhetsregisteret of the healthcare provider's office |
+| `provider.office.orgName` | string | ✅ | Name of the healthcare provider's office |
+| `provider.office.herId` | string \| null | ❌ | HER-id in the Adresseregisteret of the healthcare provider's office |
+| `signature` | object | ✅ | Information about the signature |
+| `signature.signingProviderIdent` | string | ✅ | National identity number (11 digits) of the healthcare provider who signed the message |
+| `signature.signedAt` | string (ISO 8601, UTC) | ✅ | Date and time the message was signed |
+| `documentId` | string | ✅ | Document ID of the message in the document archive |
+| `conversationReference` | object \| null | ❌ | Information about the conversation |
+| `conversationReference.parentMessageId` | string (UUID) | ✅ | Reference to previous dialog message in conversation |
+| `conversationReference.conversationId` | string (UUID) | ✅ | Reference to conversation (typically the same id as initial dialog message) |
+| `message` | string \| null | ❌ | Message text |
+| `numberOfAttachments` | integer | ✅ | Number of attachments |
 
 #### Inbound message types
 

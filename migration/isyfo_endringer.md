@@ -48,38 +48,29 @@ I en overgangsperiode skal iSYFO sitt fagsystem forholde seg både til
 2.  **Ny DialogmeldingForKafka (innkommende dialogmelding).**
 
 [Dette](https://helsemelding-json-schema.intern.dev.nav.no/api/v1/schemas/incoming-dialog-message/latest)
-er en modell som Helsemeldings plattform skal sende til iSYFO sitt
-fagsystem.
+er en modell som Helsemeldings plattform skal sende til iSYFO sitt fagsystem.
 
-Den er forskjellig fra dagens **DialogmeldingForKafka** ved at:
+Tabellen viser hvordan feltene i dagens **DialogmeldingForKafka** svarer til
+feltene i **IncomingDialogMessage**.
 
-- **navLogId** fjernes ettersom det ser ut til å ha med eMottak å gjøre.
-
-- **behandlerRef** og **legeSignaturRef** grupperes sammen under ny
-
-type **Sender** ettersom begge to er informasjon om avsender.
-
-- **personIdentBehandler** erstattes av **Sender.behandlerRef** ettersom
-  det
-
-virker ryddigere å forholde seg til **id** fra Behandlerregisteret.
-
-- **legekontorOrgNr**, **legekontorHerId**, **legekontorReshId**,
-  legekontorOrgName, legehpr er tiltenkt å fjernes ettersom den
-  informasjon burde kunne hentes fra behandlerregisteret basert på
-  **Sender.behandlerRef** (eller **Sender.legeSignaturRef**) (dette skal
-  dobbeltsjekkes også).
-
-- **journalpostId** fjernes ettersom Helsemeldings plattform ikke skal
-  arkivere noe.
-
-- **fellesformatXML** fjernes ettersom konsumentene skal slippe å
-  forholde seg til dette og skal ikke ha behov for informasjon i XML (i
-  så fall bør topic utvides)
-
-- **dialogmeldingRefParent** og **dialogmeldingRefConversation**
-  grupperes sammen under ny type: **ConversationRef** for bedre
-  organisering.
+| I dagens modell (`DialogmeldingForKafka`) | I ny modell (`IncomingDialogMessage`) | Forskjell |
+|---|---|---|
+| `msgId` | `id` | Samme meldings-ID med nytt feltnavn. |
+| `msgType` | `type` | Meldingskategorien får nytt feltnavn og representeres som enum. |
+| `mottattTidspunkt` | `receivedAt` | Nytt feltnavn. |
+| `personIdentPasient` | `patientIdent` | Pasientens ident får nytt feltnavn. |
+| `conversationRef`, `parentRef` | `conversationReference.conversationId`, `conversationReference.parentMessageId` | Samles i et objekt. Hele `conversationReference` kan være `null`. |
+| `dialogmelding` | `message`, `type`, `signature` | Den nye modellen har ikke den gamle, nestede strukturen. `message` inneholder meldingsteksten. Andre strukturerte detaljer, som forespørsels- og møtesvarfelter, følger ikke med som egne felt. |
+| Ingen | `documentId` | Nytt felt. Converteren henter verdien fra første notat. |
+| `personIdentBehandler` | `provider.ident` | Behandlerens ident flyttes til `provider`. |
+| `legehpr` | `provider.hprNumber` | HPR-nummeret flyttes til `provider`. Feltet kan være `null`. |
+| `legekontorOrgNr`, `legekontorOrgName`, `legekontorHerId` | `provider.office.orgNumber`, `provider.office.orgName`, `provider.office.herId` | Kontoropplysningene samles under `provider.office`. Organisasjonsnummer og HER-id kan være `null`. |
+| `legekontorReshId`, `pasientAktoerId`, `behandlerAktoerId` | Ingen | Feltene har ingen direkte motpart i den nye modellen. |
+| `dialogmelding.signaturDato` | `signature.signedAt` | Nytt feltnavn. |
+| Signerende behandler i `dialogmelding` | `signature.signingProviderIdent` | Nytt feltnavn. |
+| `antallVedlegg` | `numberOfAttachments` | Nytt feltnavn. |
+| `navLogId`, `journalpostId`, `fellesformatXML` | Ingen | Feltene er fjernet. |
+| Ingen | `version` | Den nye modellen har et obligatorisk versjonsfelt uten motpart i den gamle. |
 
 I en overgangsperiode skal iSYFO sitt fagsystem forholde seg både til
 
