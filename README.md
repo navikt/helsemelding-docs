@@ -36,43 +36,6 @@ These will be fixed, but have not been deemed crucial enough to wait for these t
 - No signature information - The value used for `signingProviderIdent` is the provider from the XML
 - `receivedAt` from the `helsemelding.dialog.in` will be slightly inaccurate, but nothing of significance.  
 
-The error topic `helsemelding.dialog.out.error` is still being worked on, but there are only expected to be minor 
-changes, which is as following:
-
-```kotlin
-data class ErrorMessage(
-  val processedAt: Instant,
-  val sourceSystem: String,
-  val errors: List<ProcessingError>,
-  val originalMessage: OriginalMessage
-)
-
-data class OriginalMessage(
-  val createdAt: Instant,
-  val payload: String
-)
-```
-
-To:
-```kotlin
-data class ErrorMessage(
-    val processedAt: Instant,
-    val sourceSystem: String,
-    val messageId: Uuid?,
-    val errors: List<ProcessingError>,
-    val originalMessage: OriginalMessage?,
-)
-
-data class OriginalMessage(
-    val publishedAt: Instant,
-    val payload: String
-)
-```
-
-Notable changes:
-- `messageId` will be added to `ErrorMessage`
-- `OriginalMessage.createdAt` will be renamed to `publishedAt` 
-
 #### Difference in behavior
 
 This is functionality that exist in the current implementation that most likely won't be present in the new.

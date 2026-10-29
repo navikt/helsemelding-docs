@@ -323,8 +323,10 @@ to detect and handle delivery failures.
 
 ```json
 {
+  "version": 1,
   "processedAt": "2024-06-01T10:05:00Z",
   "sourceSystem": "my-application",
+  "messageId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
   "errors": [
     {
       "category": "VALIDATION",
@@ -333,7 +335,7 @@ to detect and handle delivery failures.
     }
   ],
   "originalMessage": {
-    "createdAt": "2024-06-01T10:04:59Z",
+    "publishedAt": "2024-06-01T10:04:59Z",
     "payload": "<the original message value>"
   }
 }
@@ -341,16 +343,19 @@ to detect and handle delivery failures.
 
 #### Field descriptions
 
-| Field | Type | Description |
-|---|---|---|
-| `processedAt` | string (ISO 8601, UTC) | When the error was detected |
-| `sourceSystem` | string | Value of the `sourceSystem` header from the rejected record |
-| `errors` | array | One or more validation errors |
-| `errors[].category` | string | Error category |
-| `errors[].code` | string (enum) | Machine-readable error code (see below) |
-| `errors[].message` | string | Human-readable error description |
-| `originalMessage.createdAt` | string (ISO 8601, UTC) | Timestamp of the original record |
-| `originalMessage.payload` | string | Original record value |
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `version` | integer | ✅ | Schema version |
+| `processedAt` | string (ISO 8601, UTC) | ✅ | Date and time the dialog message was processed |
+| `sourceSystem` | string | ✅ | Value of the `sourceSystem` header from the rejected record |
+| `messageId` | string (UUID) \| null | ❌ | Unique identifier of the dialog message that failed |
+| `errors` | array | ✅ | List of possible errors when processing the message |
+| `errors[].category` | string (enum) | ✅ | Error category: `VALIDATION`, `CONVERSION`, or `SIGNING` |
+| `errors[].code` | string (enum) | ✅ | Machine-readable error code ([see error codes below](#error-codes)) |
+| `errors[].message` | string | ✅ | Human-readable error description |
+| `originalMessage` | object \| null | ❌ | Information about the original message |
+| `originalMessage.publishedAt` | string (ISO 8601, UTC) | ✅ | Date and time the original record was published. |
+| `originalMessage.payload` | string | ✅ | Original record (JSON) published to `helsemelding.dialog.out` |
 
 #### Error codes
 
@@ -358,6 +363,12 @@ to detect and handle delivery failures.
 |---|---|
 | `INVALID_KAFKA_VALUE` | The record value is null, empty, or not valid JSON. Check [JSON schema](https://helsemelding-json-schema.intern.dev.nav.no/api/v1/schemas/outgoing-dialog-message/latest) (accessible via NAIS-device) to get the expected structure. |
 | `MISSING_SOURCE_SYSTEM_HEADER` | The required [`sourceSystem` Kafka header](#kafka-headers) is absent or empty |
+| `INVALID_MESSAGE` | The outbound message does not conform to the expected message requirements |
+| `CONVERSION_ERROR` | The outbound message could not be converted for delivery |
+| `MESSAGE_ID_EXTRACTION_ERROR` | The platform could not extract the outbound message ID from JSON |
+| `PDL_ERROR` | PDL-related information could not be resolved |
+| `PROVIDER_REGISTRY_ERROR` | Provider information could not be resolved |
+| `SIGNING_ERROR` | The message could not be signed |
 
 ---
 

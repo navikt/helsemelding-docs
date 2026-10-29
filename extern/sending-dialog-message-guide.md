@@ -190,6 +190,12 @@ which are reported as `REJECTED_TRANSPORT` or `REJECTED_APPREC` status events on
 |---|---|
 | `INVALID_KAFKA_VALUE` | The record value is null, empty, or not valid JSON |
 | `MISSING_SOURCE_SYSTEM_HEADER` | The required `sourceSystem` Kafka header is absent or empty |
+| `INVALID_MESSAGE` | The outbound message does not conform to the expected message requirements |
+| `CONVERSION_ERROR` | The outbound message could not be converted for delivery |
+| `MESSAGE_ID_EXTRACTION_ERROR` | The platform could not extract the outbound message ID from JSON |
+| `PDL_ERROR` | PDL-related information could not be resolved |
+| `PROVIDER_REGISTRY_ERROR` | Provider information could not be resolved |
+| `SIGNING_ERROR` | The message could not be signed |
 
 ### Correlating error events
 
@@ -197,8 +203,10 @@ Use the `originalMessage.payload` field to inspect the rejected message:
 
 ```json
 {
+  "version": 1,
   "processedAt": "2024-06-01T10:05:00Z",
   "sourceSystem": "my-fagsystem",
+  "messageId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
   "errors": [
     {
       "category": "VALIDATION",
@@ -207,7 +215,7 @@ Use the `originalMessage.payload` field to inspect the rejected message:
     }
   ],
   "originalMessage": {
-    "createdAt": "2024-06-01T10:04:59Z",
+    "publishedAt": "2024-06-01T10:04:59Z",
     "payload": "{ ... }"
   }
 }
